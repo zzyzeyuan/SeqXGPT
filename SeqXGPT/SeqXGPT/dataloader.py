@@ -71,6 +71,7 @@ class DataManager:
         samples_dict = {'features': [], 'prompt_len': [], 'label': [], 'text': []}
 
         for item in tqdm(samples):
+
             text = item['text']
             label = item['label']
             prompt_len = item['prompt_len']

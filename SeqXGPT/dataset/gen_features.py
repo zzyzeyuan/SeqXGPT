@@ -43,28 +43,44 @@ def get_features(type, input_file, output_file):
     en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
     cn_model_names = ['wenzhong', 'sky_text', 'damo', 'chatglm']
 
-    gpt_2_api = 'http://10.176.52.120:20098/inference'
-    gpt_neo_api = 'http://10.176.52.120:20097/inference'
-    gpt_J_api = 'http://10.176.52.120:20099/inference'
-    llama_api = 'http://10.176.52.120:20100/inference'
+    # gpt_2_api = 'http://10.176.52.120:20098/inference'
+    gpt_2_api = 'http://0.0.0.0:6006/inference'
+    gpt_neo_api = 'http://0.0.0.0:6007/inference'
+    gpt_J_api = 'http://0.0.0.0:6008/inference'
+    gpt_3re_api = 'http://0.0.0.0:6010/inference'
+    llama_api = 'http://0.0.0.0:6009/inference'
     wenzhong_api = 'http://10.176.52.101:20160/inference'
     sky_text_api = 'http://10.176.52.120:20102/inference'
     damo_api = 'http://10.176.52.120:20101/inference'
     chatglm_api = 'http://10.176.52.120:20103/inference'
 
-    en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api]
+    # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api]
+    en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
     cn_model_apis = [wenzhong_api, sky_text_api, damo_api, chatglm_api]
 
+    # en_labels = {
+    #     'gpt2': 0,
+    #     'gptneo': 1,
+    #     'gptj': 1,
+    #     'llama': 2,
+    #     'gpt3re': 3,
+    #     'gpt3sum': 3,
+    #     'human': 4,
+    #     'alpaca': None,
+    #     'dolly': None,
+    # }
+
+    # en_labels = {
+    #     'gpt2':0,
+    #     'gptneo':1,
+    #     'gptj':2,
+    #     'llama':3,
+    #     'human':4,
+    # }
+
     en_labels = {
-        'gpt2': 0,
-        'gptneo': 1,
-        'gptj': 1,
-        'llama': 2,
-        'gpt3re': 3,
-        'gpt3sum': 3,
-        'human': 4,
-        'alpaca': None,
-        'dolly': None,
+        'human': 0,
+        'ai': 1
     }
 
     cn_labels = {
@@ -87,8 +103,14 @@ def get_features(type, input_file, output_file):
 
     with open(output_file, 'w', encoding='utf-8') as f:
         for data in tqdm(lines):
+
             line = data['text']
             label = data['label']
+
+            if 'prompt_len' in data:
+                prompt_len = data['prompt_len'] # added by zzy
+            else:
+                prompt_len = 0 # corresponding to human text
 
             losses = []
             begin_idx_list = []
@@ -100,12 +122,14 @@ def get_features(type, input_file, output_file):
                 model_apis = cn_model_apis
                 label_dict = cn_labels
 
-            label_int = label_dict[label]
+            # label_int = label_dict[label] # default
+            label_int = data['label_int'] # 处理kaggle data
 
             error_flag = False
             for api in model_apis:
                 try:
                     loss, begin_word_idx, ll_tokens = access_api(line, api)
+                    # print('Success!')
                 except TypeError:
                     print("return NoneType, probably gpu OOM, discard this sample")
                     error_flag = True
@@ -121,9 +145,10 @@ def get_features(type, input_file, output_file):
                 'losses': losses,
                 'begin_idx_list': begin_idx_list,
                 'll_tokens_list': ll_tokens_list,
+                'prompt_len': prompt_len,
                 'label_int': label_int,
                 'label': label,
-                'text': line
+                'text': line,
             }
 
             f.write(json.dumps(result, ensure_ascii=False) + '\n')

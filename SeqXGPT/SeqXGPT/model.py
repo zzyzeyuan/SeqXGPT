@@ -56,7 +56,8 @@ class ModelWiseCNNClassifier(nn.Module):
             conv_bias=False,
         )
 
-        embedding_size = 4 *64
+        # embedding_size = 4 *64
+        embedding_size = 64 # only gpt2
         self.norm = nn.LayerNorm(embedding_size)
         
         self.label_num = len(id2labels)
@@ -73,11 +74,11 @@ class ModelWiseCNNClassifier(nn.Module):
     def forward(self, x, labels):
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  
-        out2 = self.conv_feat_extract(x[:, 1:2, :])  
-        out3 = self.conv_feat_extract(x[:, 2:3, :])  
-        out4 = self.conv_feat_extract(x[:, 3:4, :])  
-        outputs = torch.cat((out1, out2, out3, out4), dim=2)  
-        
+        # out2 = self.conv_feat_extract(x[:, 1:2, :])  
+        # out3 = self.conv_feat_extract(x[:, 2:3, :])  
+        # out4 = self.conv_feat_extract(x[:, 3:4, :])  
+        # outputs = torch.cat((out1, out2, out3, out4), dim=2)  
+        outputs = out1
         outputs = self.norm(outputs)
         dropout_outputs = self.dropout(outputs)
         logits = self.classifier(dropout_outputs)
@@ -109,7 +110,8 @@ class ModelWiseTransformerClassifier(nn.Module):
         )
         
         self.seq_len = seq_len          # MAX Seq_len
-        embedding_size = 4 *64
+        # embedding_size = 4 *64
+        embedding_size = 64 # only use gpt2 to test kaggle
         self.encoder_layer = TransformerEncoderLayer(
             d_model=embedding_size,
             nhead=16,
@@ -147,11 +149,12 @@ class ModelWiseTransformerClassifier(nn.Module):
 
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  
-        out2 = self.conv_feat_extract(x[:, 1:2, :])  
-        out3 = self.conv_feat_extract(x[:, 2:3, :])  
-        out4 = self.conv_feat_extract(x[:, 3:4, :])  
-        out = torch.cat((out1, out2, out3, out4), dim=2)  
-        
+        # out2 = self.conv_feat_extract(x[:, 1:2, :])  
+        # out3 = self.conv_feat_extract(x[:, 2:3, :])  
+        # out4 = self.conv_feat_extract(x[:, 3:4, :])  
+        # out = torch.cat((out1, out2, out3, out4), dim=2)  
+        out = out1
+
         outputs = out + self.position_encoding.to(out.device)
         outputs = self.norm(outputs)
         outputs = self.encoder(outputs, src_key_padding_mask=padding_mask)

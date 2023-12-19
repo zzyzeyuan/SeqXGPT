@@ -308,7 +308,7 @@ def parse_args():
     parser.add_argument('--model', type=str, default='Transformer')
     parser.add_argument('--gpu', type=str, default='0')
     parser.add_argument('--train_mode', type=str, default='classify')
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--seq_len', type=int, default=1024)
 
     parser.add_argument('--train_ratio', type=float, default=0.9)
@@ -337,16 +337,17 @@ if __name__ == "__main__":
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
 
     # en_labels = backend_model_info.en_labels
-    en_labels = {
-        'gpt2': 0,
-        'gptneo': 1,
-        'gptj': 2,
-        'llama': 3,
-        'gpt3re': 4,
-        # 'gpt3sum': 3,
-        'human': 5
-    }
+    # en_labels = {
+    #     'gpt2': 0,
+    #     'gptneo': 1,
+    #     'gptj': 2,
+    #     'llama': 3,
+    #     'gpt3re': 4,
+    #     # 'gpt3sum': 3,
+    #     'human': 5
+    # }
     # en_labels = {'AI':0, 'human':1}
+    en_labels = {'human':0, 'ai':1}
 
     id2label = construct_bmes_labels(en_labels)
     label2id = {v: k for k, v in id2label.items()}

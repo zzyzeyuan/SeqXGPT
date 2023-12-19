@@ -40,7 +40,8 @@ def get_features(type, input_file, output_file):
     get [losses, begin_idx_list, ll_tokens_list, label_int, label] based on raw lines
     """
 
-    en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
+    # en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
+    en_model_names = ['gpt_2']
     cn_model_names = ['wenzhong', 'sky_text', 'damo', 'chatglm']
 
     # gpt_2_api = 'http://10.176.52.120:20098/inference'
@@ -54,8 +55,8 @@ def get_features(type, input_file, output_file):
     damo_api = 'http://10.176.52.120:20101/inference'
     chatglm_api = 'http://10.176.52.120:20103/inference'
 
-    # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api]
-    en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
+    en_model_apis = [gpt_2_api]
+    # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
     cn_model_apis = [wenzhong_api, sky_text_api, damo_api, chatglm_api]
 
     # en_labels = {

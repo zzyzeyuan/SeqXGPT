@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 project_path = os.path.abspath('')
 if project_path not in sys.path:
     sys.path.append(project_path)
-import backend_model_info
+import seqxgpt.SeqXGPT.backend_model_info
 from dataloader import DataManager
 from model import ModelWiseCNNClassifier, ModelWiseTransformerClassifier, TransformerOnlyClassifier
 

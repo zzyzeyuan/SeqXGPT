@@ -50,7 +50,7 @@ def parse_args():
                         help="Set os.environ['CUDA_VISIBLE_DEVICES'].")
 
     parser.add_argument("--port", help="mosec args.")
-    parser.add_argument("--timeout", help="mosec args.")
+    parser.add_argument("--timeout", type=int, default=30000, help="mosec args.")
     parser.add_argument("--debug", action="store_true", help="mosec args.")
     return parser.parse_args()
 

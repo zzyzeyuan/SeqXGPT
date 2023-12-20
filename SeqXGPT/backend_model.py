@@ -136,11 +136,22 @@ class SnifferGPTJModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
-            'EleutherAI/gpt-j-6B')
+        self.offline_model_path = '/kaggle/input/gpt-j-6B/'
+        if self.offline_model_path is not None:
+            print("Using offline GPTJ model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+        else:
+            print("Using online GPTJ model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
+                'EleutherAI/gpt-j-6B')
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
+                'EleutherAI/gpt-j-6B', device_map="auto", load_in_8bit=True)
+        # self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        #     'EleutherAI/gpt-j-6B')
+        # self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
+        #     'EleutherAI/gpt-j-6B', device_map="auto", load_in_8bit=True)
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
-        self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
-            'EleutherAI/gpt-j-6B', device_map="auto", load_in_8bit=True)
         byte_encoder = bytes_to_unicode()
         self.ppl_calculator = BBPETokenizerPPLCalc(byte_encoder,
                                                    self.base_model,
@@ -163,11 +174,21 @@ class SnifferLlamaModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
+        self.offline_path = '/kaggle/input/llama-7b'
         model_path = ''
-        self.base_tokenizer = LlamaTokenizer.from_pretrained(model_path)
+        
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
         self.base_tokenizer.unk_token_id = self.base_tokenizer.unk_token_id
-        self.base_model = LlamaForCausalLM.from_pretrained(model_path,
+
+        if self.offline_path is not None:
+            print("Using offline Llama model")
+            self.base_tokenizer = LlamaTokenizer.from_pretrained(self.offline_path)
+            self.base_model = LlamaForCausalLM.from_pretrained(self.offline_path,
+                                                               device_map="auto",
+                                                               load_in_8bit=True)
+        else:
+            self.base_tokenizer = LlamaTokenizer.from_pretrained(model_path)
+            self.base_model = LlamaForCausalLM.from_pretrained(model_path,
                                                            device_map="auto",
                                                            load_in_8bit=True)
         self.ppl_calculator = SPLlamaTokenizerPPLCalc(self.base_model,

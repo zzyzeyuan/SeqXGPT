@@ -72,10 +72,17 @@ class SnifferGPT2Model(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
-            'gpt2-xl')
-        self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
-            'gpt2-xl')
+        self.offline_model_path = '/kaggle/input/gpt2-xl/'
+        if self.offline_model_path is not None:
+            print("Using offline GPT2 model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+        else:
+            print("Using online GPT2 model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
+                'gpt2-xl')
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
+                'gpt2-xl')
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
         self.base_model.to(self.device)
         byte_encoder = bytes_to_unicode()
@@ -95,10 +102,21 @@ class SnifferGPTNeoModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
-            'EleutherAI/gpt-neo-2.7B')
-        self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
-            'EleutherAI/gpt-neo-2.7B', device_map="auto", load_in_8bit=True)
+        self.offline_model_path = '/kaggle/input/gpt-neo-2.7B/'
+        if self.offline_model_path is not None:
+            print("Using offline GPTNeo model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+        else:
+            print("Using online GPTNeo model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
+                'EleutherAI/gpt-neo-2.7B')
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
+                'EleutherAI/gpt-neo-2.7B', device_map="auto", load_in_8bit=True)
+        # self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        #     'EleutherAI/gpt-neo-2.7B')
+        # self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
+        #     'EleutherAI/gpt-neo-2.7B', device_map="auto", load_in_8bit=True)
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
         byte_encoder = bytes_to_unicode()
         self.ppl_calculator = BBPETokenizerPPLCalc(byte_encoder,

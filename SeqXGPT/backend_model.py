@@ -72,7 +72,7 @@ class SnifferGPT2Model(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.offline_model_path = '/kaggle/input/gpt2-xl/'
+        self.offline_model_path = '/kaggle/input/gpt2-xl2/'
         if self.offline_model_path is not None:
             print("Using offline GPT2 model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)

@@ -75,18 +75,18 @@ def get_features(type, input_file, output_file, which_api='gpt2'):
     #     'dolly': None,
     # }
 
-    en_labels = {
-        'gpt2':0,
-        'gptneo':1,
-        'gptj':1,
-        'llama':2,
-        'human':3,
-    }
-
     # en_labels = {
-    #     'human': 0,
-    #     'ai': 1
+    #     'gpt2':0,
+    #     'gptneo':1,
+    #     'gptj':1,
+    #     'llama':2,
+    #     'human':3,
     # }
+
+    en_labels = {
+        'human': 0,
+        'ai': 1
+    }
 
     cn_labels = {
         'wenzhong': 0,

@@ -8,7 +8,7 @@ from backend_utils import split_sentence
 from mosec import Worker
 from mosec.mixin import MsgpackMixin
 # llama
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import LlamaForCausalLM, LlamaTokenizer, BitsAndBytesConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer, StoppingCriteria, StoppingCriteriaList
 from transformers.models.gpt2.tokenization_gpt2 import bytes_to_unicode
 

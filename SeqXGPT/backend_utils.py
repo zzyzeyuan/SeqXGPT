@@ -476,6 +476,7 @@ class SPLlamaTokenizerPPLCalc(object):
         ll_tokens = self.calc_token_ppl(bbs_to_words, bbs_ll)
         # ll_tokens has removed `<s>_`, the first element is the logit of the first word
         begin_word_idx = 0
+        torch.cuda.empty_cache() # zzy
         return [loss, begin_word_idx, ll_tokens]
 
 

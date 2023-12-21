@@ -268,6 +268,7 @@ class BBPETokenizerPPLCalc(object):
         bbs_ll = self.get_bbs_ll(input_ids, ll)
         ll_tokens = self.calc_token_ppl(bbs_to_words, bbs_ll)
         begin_word_idx = self.get_begin_word_idx(input_ids, bbs_to_words)
+        torch.cuda.empty_cache() # zzy
         return [loss, begin_word_idx, ll_tokens]
 
 

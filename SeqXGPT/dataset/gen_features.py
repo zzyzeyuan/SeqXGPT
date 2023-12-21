@@ -35,12 +35,12 @@ def access_api(text, api_url, do_generate=False):
     return content
 
 
-def get_features(type, input_file, output_file, which_api='gpt2'):
+def get_features(type, input_file, output_file, which_api):
     """
     get [losses, begin_idx_list, ll_tokens_list, label_int, label] based on raw lines
     """
 
-    en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
+    # en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
     # en_models_names = ['gpt_2', 'gpt_neo']
     cn_model_names = ['wenzhong', 'sky_text', 'damo', 'chatglm']
 
@@ -55,11 +55,15 @@ def get_features(type, input_file, output_file, which_api='gpt2'):
     damo_api = 'http://10.176.52.120:20101/inference'
     chatglm_api = 'http://10.176.52.120:20103/inference'
 
-    if which_api == 'gpt2':
-        en_model_apis = [gpt_2_api]
-    elif which_api == 'gptneo':
-        en_model_apis = [gpt_neo_api]
-    # en_model_apis = [which_api]
+    if which_api == 0:
+        en_model_apis = [gpt_2_api] # 6006
+    elif which_api == 1:
+        en_model_apis = [gpt_neo_api] # 6007
+    elif which_api == 2:
+        en_model_apis = [gpt_J_api] # 6008
+    elif which_api == 3:
+        en_model_apis = [llama_api] # 6009
+    print('INFO: use en_model_api: ', en_model_apis)
     # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
     cn_model_apis = [wenzhong_api, sky_text_api, damo_api, chatglm_api]
 
@@ -126,7 +130,7 @@ def get_features(type, input_file, output_file, which_api='gpt2'):
             elif type == 'cn':
                 model_apis = cn_model_apis
                 label_dict = cn_labels
-
+            print('INFO: use model api: ', model_apis)
             label_int = label_dict[label] # default
             # label_int = data['label_int'] # 处理kaggle data
 
@@ -147,12 +151,12 @@ def get_features(type, input_file, output_file, which_api='gpt2'):
                 continue
 
             result = {
-                'losses': losses,
-                'begin_idx_list': begin_idx_list,
-                'll_tokens_list': ll_tokens_list,
                 'prompt_len': prompt_len,
                 'label_int': label_int,
                 'label': label,
+                'losses': losses,
+                'begin_idx_list': begin_idx_list,
+                'll_tokens_list': ll_tokens_list,
                 'text': line,
             }
 
@@ -293,7 +297,7 @@ def parse_args():
     parser.add_argument("--get_en_features_multithreading", action="store_true", help="multithreading generate en logits and losses")
     parser.add_argument("--get_cn_features_multithreading", action="store_true", help="multithreading generate cn logits and losses")
     parser.add_argument("--process_features", action="store_true", help="process the raw features")
-    parser.add_argument("--api", type=str, default='gpt2', help="select from gpt2, gptneo, gptj, llama")
+    parser.add_argument("--api", type=int, help="select from 0(gpt2), 1(gptneo), 2(gptj), 3(llama)")
     parser.add_argument("--do_normalize", action="store_true", help="normalize the features")
     return parser.parse_args()
 

@@ -90,7 +90,7 @@ class SnifferGPT2Model(SnifferBaseModel):
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
                 'gpt2-xl')
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
-        self.base_model.to(self.device)
+        # self.base_model.to(self.device)
         byte_encoder = bytes_to_unicode()
         self.ppl_calculator = BBPETokenizerPPLCalc(byte_encoder,
                                                    self.base_model,

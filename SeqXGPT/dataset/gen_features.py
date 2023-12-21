@@ -55,14 +55,15 @@ def get_features(type, input_file, output_file, which_api):
     damo_api = 'http://10.176.52.120:20101/inference'
     chatglm_api = 'http://10.176.52.120:20103/inference'
 
+    en_model_apis = []
     if which_api == 0:
-        en_model_apis = [gpt_2_api] # 6006
-    elif which_api == 1:
-        en_model_apis = [gpt_neo_api] # 6007
-    elif which_api == 2:
-        en_model_apis = [gpt_J_api] # 6008
-    elif which_api == 3:
-        en_model_apis = [llama_api] # 6009
+        en_model_apis.append(gpt_2_api) # 6006
+    if which_api == 1:
+        en_model_apis.append(gpt_neo_api) # 6007
+    if which_api == 2:
+        en_model_apis.append(gpt_J_api) # 6008
+    if which_api == 3:
+        en_model_apis.append(llama_api) # 6009
     print('INFO: use en_model_api: ', en_model_apis)
     # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
     cn_model_apis = [wenzhong_api, sky_text_api, damo_api, chatglm_api]
@@ -304,7 +305,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-
+    print('INFO: using api number: ', args.api)
+    print('\n')
     if args.get_en_features:
         """
         retrieve english features in a single file 

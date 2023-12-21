@@ -73,10 +73,16 @@ class SnifferGPT2Model(SnifferBaseModel):
         self.do_generate = None
         self.text = None
         self.offline_model_path = '/kaggle/input/gpt2-xl2/'
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True,
+                                        bnb_4bit_quant_type="nf4",
+                                        bnb_4bit_use_double_quant=True,
+                                        bnb_4bit_compute_dtype=torch.bfloat16)
         if self.offline_model_path is not None:
             print("Using offline GPT2 model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
-            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
+                                                                               quantization_cnofig=bnb_config,
+                                                                               device_map="auto")
         else:
             print("Using online GPT2 model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
@@ -137,10 +143,16 @@ class SnifferGPTJModel(SnifferBaseModel):
         self.do_generate = None
         self.text = None
         self.offline_model_path = '/kaggle/input/gpt-j-6B/'
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True,
+                                        bnb_4bit_quant_type="nf4",
+                                        bnb_4bit_use_double_quant=True,
+                                        bnb_4bit_compute_dtype=torch.bfloat16)
         if self.offline_model_path is not None:
             print("Using offline GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
-            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
+                                                                               quantization_config=bnb_config,
+                                                                               device_map="auto")
         else:
             print("Using online GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
@@ -176,7 +188,10 @@ class SnifferLlamaModel(SnifferBaseModel):
         self.text = None
         self.offline_path = '/kaggle/input/llama-7b'
         model_path = ''
-        
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True,
+                                        bnb_4bit_quant_type="nf4",
+                                        bnb_4bit_use_double_quant=True,
+                                        bnb_4bit_compute_dtype=torch.bfloat16)
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
         self.base_tokenizer.unk_token_id = self.base_tokenizer.unk_token_id
 
@@ -185,7 +200,7 @@ class SnifferLlamaModel(SnifferBaseModel):
             self.base_tokenizer = LlamaTokenizer.from_pretrained(self.offline_path)
             self.base_model = LlamaForCausalLM.from_pretrained(self.offline_path,
                                                                device_map="auto",
-                                                               load_in_8bit=True)
+                                                               quantization_config=bnb_config)
         else:
             self.base_tokenizer = LlamaTokenizer.from_pretrained(model_path)
             self.base_model = LlamaForCausalLM.from_pretrained(model_path,

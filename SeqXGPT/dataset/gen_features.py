@@ -35,27 +35,31 @@ def access_api(text, api_url, do_generate=False):
     return content
 
 
-def get_features(type, input_file, output_file):
+def get_features(type, input_file, output_file, which_api='gpt2'):
     """
     get [losses, begin_idx_list, ll_tokens_list, label_int, label] based on raw lines
     """
 
-    # en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
-    en_model_names = ['gpt_2']
+    en_model_names = ['gpt_2', 'gpt_neo', 'gpt_J', 'llama']
+    # en_models_names = ['gpt_2', 'gpt_neo']
     cn_model_names = ['wenzhong', 'sky_text', 'damo', 'chatglm']
 
     # gpt_2_api = 'http://10.176.52.120:20098/inference'
     gpt_2_api = 'http://0.0.0.0:6006/inference'
     gpt_neo_api = 'http://0.0.0.0:6007/inference'
     gpt_J_api = 'http://0.0.0.0:6008/inference'
-    gpt_3re_api = 'http://0.0.0.0:6010/inference'
+    gpt_3re_api = 'http://0.0.0.0:port/inference'
     llama_api = 'http://0.0.0.0:6009/inference'
     wenzhong_api = 'http://10.176.52.101:20160/inference'
     sky_text_api = 'http://10.176.52.120:20102/inference'
     damo_api = 'http://10.176.52.120:20101/inference'
     chatglm_api = 'http://10.176.52.120:20103/inference'
 
-    en_model_apis = [gpt_2_api]
+    if which_api == 'gpt2':
+        en_model_apis = [gpt_2_api]
+    elif which_api == 'gptneo':
+        en_model_apis = [gpt_neo_api]
+    # en_model_apis = [which_api]
     # en_model_apis = [gpt_2_api, gpt_neo_api, gpt_J_api, llama_api] # zzy
     cn_model_apis = [wenzhong_api, sky_text_api, damo_api, chatglm_api]
 
@@ -71,18 +75,18 @@ def get_features(type, input_file, output_file):
     #     'dolly': None,
     # }
 
-    # en_labels = {
-    #     'gpt2':0,
-    #     'gptneo':1,
-    #     'gptj':2,
-    #     'llama':3,
-    #     'human':4,
-    # }
-
     en_labels = {
-        'human': 0,
-        'ai': 1
+        'gpt2':0,
+        'gptneo':1,
+        'gptj':1,
+        'llama':2,
+        'human':3,
     }
+
+    # en_labels = {
+    #     'human': 0,
+    #     'ai': 1
+    # }
 
     cn_labels = {
         'wenzhong': 0,
@@ -123,8 +127,8 @@ def get_features(type, input_file, output_file):
                 model_apis = cn_model_apis
                 label_dict = cn_labels
 
-            # label_int = label_dict[label] # default
-            label_int = data['label_int'] # 处理kaggle data
+            label_int = label_dict[label] # default
+            # label_int = data['label_int'] # 处理kaggle data
 
             error_flag = False
             for api in model_apis:
@@ -289,7 +293,7 @@ def parse_args():
     parser.add_argument("--get_en_features_multithreading", action="store_true", help="multithreading generate en logits and losses")
     parser.add_argument("--get_cn_features_multithreading", action="store_true", help="multithreading generate cn logits and losses")
     parser.add_argument("--process_features", action="store_true", help="process the raw features")
-
+    parser.add_argument("--api", type=str, default='gpt2', help="select from gpt2, gptneo, gptj, llama")
     parser.add_argument("--do_normalize", action="store_true", help="normalize the features")
     return parser.parse_args()
 
@@ -306,7 +310,7 @@ if __name__ == "__main__":
         python gen_features.py --get_en_features --input_file gpt3_ablation_data/gpt3_ablation_train_lines.jsonl --output_file ../features/gpt3_ablation_features/gpt3_ablation_train_features.jsonl
         python gen_features.py --get_en_features --input_file gpt3_ablation_data/gpt3_ablation_test_lines.jsonl --output_file ../features/gpt3_ablation_features/gpt3_ablation_test_features.jsonl
         """
-        get_features(type='en', input_file=args.input_file, output_file=args.output_file)
+        get_features(type='en', input_file=args.input_file, output_file=args.output_file, which_api=args.api)
 
     elif args.get_cn_features:
         """

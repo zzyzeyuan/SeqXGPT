@@ -112,7 +112,7 @@ def get_features(type, input_file, output_file, which_api):
     print('input file:{}, length:{}'.format(input_file, len(lines)))
 
     with open(output_file, 'w', encoding='utf-8') as f:
-        for data in tqdm(lines, mininterval=10):
+        for data in tqdm(lines, mininterval=2):
 
             line = data['text']
             label = data['label']

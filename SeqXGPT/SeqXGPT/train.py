@@ -336,7 +336,9 @@ if __name__ == "__main__":
     if args.split_dataset:
         print("Log INFO: split dataset...")
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
-
+        print(args.data_path)
+        print(args.train_path)
+        exit()
     # en_labels = backend_model_info.en_labels
     # en_labels = {
     #     'gpt2': 0,

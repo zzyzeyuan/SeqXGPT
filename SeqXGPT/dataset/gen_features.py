@@ -5,6 +5,7 @@ import threading
 import time
 import os
 import argparse
+import gc
 import json
 import scipy
 import numpy as np
@@ -162,6 +163,8 @@ def get_features(type, input_file, output_file, which_api):
             }
 
             f.write(json.dumps(result, ensure_ascii=False) + '\n')
+            del result, losses, begin_idx_list, ll_tokens_list
+            gc.collect()
 
 
 def process_features(input_file, output_file, do_normalize=False):

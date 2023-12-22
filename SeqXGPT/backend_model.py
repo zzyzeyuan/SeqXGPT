@@ -109,10 +109,16 @@ class SnifferGPTNeoModel(SnifferBaseModel):
         self.do_generate = None
         self.text = None
         self.offline_model_path = '/kaggle/input/gpt-neo-2-7b/'
+        bnb_config = BitsAndBytesConfig(load_in_4bit=True,
+                                        bnb_4bit_quant_type="nf4",
+                                        bnb_4bit_use_double_quant=True,
+                                        bnb_4bit_compute_dtype=torch.bfloat16)
         if self.offline_model_path is not None:
             print("Using offline GPTNeo model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
-            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path)
+            self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
+                                                                               device_map="auto",
+                                                                               quantization_config=bnb_config)
         else:
             print("Using online GPTNeo model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(

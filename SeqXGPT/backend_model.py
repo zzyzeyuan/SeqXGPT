@@ -108,7 +108,7 @@ class SnifferGPTNeoModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.offline_model_path = '/kaggle/input/gpt-neo-2.7B/'
+        self.offline_model_path = '/kaggle/input/gpt-neo-2-7b/'
         if self.offline_model_path is not None:
             print("Using offline GPTNeo model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)

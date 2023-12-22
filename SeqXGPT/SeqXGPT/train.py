@@ -271,6 +271,8 @@ def construct_bmes_labels(labels):
     return id2label
 
 def split_dataset(data_path, train_path, test_path, train_ratio=0.9):
+    print(data_path)
+    exit()
     file_names = [file_name for file_name in os.listdir(data_path) if file_name.endswith('.jsonl')]
     print('*'*32)
     print('The overall data sources:')

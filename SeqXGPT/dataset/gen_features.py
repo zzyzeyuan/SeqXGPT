@@ -131,7 +131,7 @@ def get_features(type, input_file, output_file, which_api):
             elif type == 'cn':
                 model_apis = cn_model_apis
                 label_dict = cn_labels
-            print('INFO: use model api: ', model_apis)
+            # print('INFO: use model api: ', model_apis)
             label_int = label_dict[label] # default
             # label_int = data['label_int'] # 处理kaggle data
 

@@ -81,7 +81,7 @@ class SnifferGPT2Model(SnifferBaseModel):
             print("Using offline GPT2 model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
-                                                                               quantization_cnofig=bnb_config,
+                                                                               quantization_config=bnb_config,
                                                                                device_map="auto")
         else:
             print("Using online GPT2 model")

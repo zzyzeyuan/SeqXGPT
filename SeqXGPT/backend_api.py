@@ -1,6 +1,6 @@
 import os
 import argparse
-
+import gc
 from mosec import Server
 from collections import OrderedDict
 from backend_model import (SnifferGPTNeoModel, 
@@ -71,3 +71,6 @@ if __name__ == "__main__":
         server = Server()
         server.append_worker(sniffer_model)
         server.run()
+
+    del server
+    gc.collect()

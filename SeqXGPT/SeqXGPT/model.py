@@ -57,7 +57,7 @@ class ModelWiseCNNClassifier(nn.Module):
         )
 
         # embedding_size = 4 *64
-        embedding_size = 64 # only gpt2
+        embedding_size = 2 * 64 # gpt2 + neo
         self.norm = nn.LayerNorm(embedding_size)
         
         self.label_num = len(id2labels)
@@ -111,7 +111,7 @@ class ModelWiseTransformerClassifier(nn.Module):
         
         self.seq_len = seq_len          # MAX Seq_len
         # embedding_size = 4 *64
-        embedding_size = 64 # only use gpt2 to test kaggle
+        embedding_size = 2 * 64 # gpt2 + neo
         self.encoder_layer = TransformerEncoderLayer(
             d_model=embedding_size,
             nhead=16,
@@ -149,11 +149,11 @@ class ModelWiseTransformerClassifier(nn.Module):
 
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  
-        # out2 = self.conv_feat_extract(x[:, 1:2, :])  
+        out2 = self.conv_feat_extract(x[:, 1:2, :])  
         # out3 = self.conv_feat_extract(x[:, 2:3, :])  
         # out4 = self.conv_feat_extract(x[:, 3:4, :])  
         # out = torch.cat((out1, out2, out3, out4), dim=2)  
-        out = out1
+        out = torch.cat((out1, out2), dim=2)
 
         outputs = out + self.position_encoding.to(out.device)
         outputs = self.norm(outputs)

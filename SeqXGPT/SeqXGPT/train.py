@@ -335,7 +335,7 @@ if __name__ == "__main__":
     args = parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-    if not os.path.exists('/kaggle/working/checkpoint/'):
+    if not os.path.exists('/kaggle/working/checkpoint'):
         os.makedirs('/kaggle/working/checkpoint')
         print('====> INFO: Create checkpoint dir...')
     ckpt = '/kaggle/working/checkpoint/' + args.model + '_gpu' + args.gpu + '.pth'

@@ -335,12 +335,14 @@ if __name__ == "__main__":
     args = parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+    if not os.path.exits('/kaggle/working/checkpoint/'):
+        os.makedirs('/kaggle/working/checkpoint')
+        print('====> INFO: Create checkpoint dir...')
+    ckpt = '/kaggle/working/checkpoint/' + args.model + '_gpu' + args.gpu + '.pth'
     if args.split_dataset:
         print("Log INFO: split dataset...")
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
-        print(args.data_path)
-        print(args.train_path)
-        exit()
+
     # en_labels = backend_model_info.en_labels
     # en_labels = {
     #     'gpt2': 0,
@@ -365,14 +367,14 @@ if __name__ == "__main__":
         if args.model == 'CNN':
             print('-' * 32 + "CNN" + '-' * 32)
             classifier = ModelWiseCNNClassifier(id2labels=id2label)
-            ckpt_name = ''
+            ckpt_name = ckpt
         elif args.model == 'RNN':
             print('-' * 32 + "RNN" + '-' * 32)
             classifier = TransformerOnlyClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = ''
+            ckpt_name = ckpt
         else:
             classifier = ModelWiseTransformerClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = ''
+            ckpt_name = ckpt
 
         trainer = SupervisedTrainer(data, classifier, en_labels, id2label, args)
 

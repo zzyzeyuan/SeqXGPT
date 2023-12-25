@@ -171,7 +171,7 @@ class SupervisedTrainer:
         accuracy = (true_labels_1d == pred_labels_1d).astype(np.float32).mean().item()
 
         print("Accuracy: {:.1f}".format(accuracy*100))
-        del true_labels_1d, pre_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits
+        del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits
         gc.collect()
 
         return ai_prob.cpu()

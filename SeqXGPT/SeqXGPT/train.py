@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import gc
 import torch
 import numpy as np
 import warnings
@@ -132,6 +133,9 @@ class SupervisedTrainer:
                 labels = inputs['labels']
                 output = self.model(inputs['features'], inputs['labels'])
                 logits = output['logits']
+                logp = F.softmax(logits, dim=2)
+                ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
+                ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
                 preds = output['preds']
                 
                 texts.extend(inputs['text'])
@@ -165,8 +169,12 @@ class SupervisedTrainer:
         true_labels_1d = true_labels_1d[mask]
         pred_labels_1d = pred_labels_1d[mask]
         accuracy = (true_labels_1d == pred_labels_1d).astype(np.float32).mean().item()
+
         print("Accuracy: {:.1f}".format(accuracy*100))
-        pass
+        del true_labels_1d, pre_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits
+        gc.collect()
+
+        return ai_prob.cpu()
     
     def content_level_eval(self, texts, true_labels, pred_labels):
         from collections import Counter
@@ -383,6 +391,9 @@ if __name__ == "__main__":
             saved_model = torch.load(ckpt_name)
             trainer.model.load_state_dict(saved_model.state_dict())
             trainer.test(content_level_eval=args.test_content)
+            generated = trainer.test(content_level_eval=args.test_content) # zzy
+            sub = pd.DataFrame(generated.numpy()) # zzy 
+            sub.to_csv('submission.csv', index=False, header=False) #zzy
         else:
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)

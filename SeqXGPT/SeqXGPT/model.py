@@ -148,6 +148,7 @@ class ModelWiseTransformerClassifier(nn.Module):
         print('\n')
         print('mask shape:', mask.shape)
         padding_mask = ~mask
+        print('padding shape: ', padding_mask.shape)
 
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  

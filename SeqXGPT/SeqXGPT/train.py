@@ -133,9 +133,13 @@ class SupervisedTrainer:
                 labels = inputs['labels']
                 output = self.model(inputs['features'], inputs['labels'])
                 logits = output['logits']
+                print('logits shape:', logits.shape)
                 logp = F.softmax(logits, dim=2)
+                print('logp shape:', logp.shape)
                 ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
+                print(ai_prob.shape)
                 ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
+                print(ai_prob.shape)
                 preds = output['preds']
                 
                 texts.extend(inputs['text'])

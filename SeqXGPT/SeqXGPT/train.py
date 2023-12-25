@@ -124,6 +124,7 @@ class SupervisedTrainer:
         true_labels = []
         pred_labels = []
         total_logits = []
+        sub = []
         for step, inputs in enumerate(
                 tqdm(self.data.test_dataloader, desc="Iteration")):
             for k, v in inputs.items():
@@ -133,13 +134,10 @@ class SupervisedTrainer:
                 labels = inputs['labels']
                 output = self.model(inputs['features'], inputs['labels'])
                 logits = output['logits']
-                print('logits shape:', logits.shape)
                 logp = F.softmax(logits, dim=2)
-                print('logp shape:', logp.shape)
                 ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
-                print(ai_prob.shape)
                 ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
-                print(ai_prob.shape)
+                sub.append(ai_prob.cpu())
                 preds = output['preds']
                 
                 texts.extend(inputs['text'])
@@ -175,11 +173,11 @@ class SupervisedTrainer:
         accuracy = (true_labels_1d == pred_labels_1d).astype(np.float32).mean().item()
 
         print("Accuracy: {:.1f}".format(accuracy*100))
-        del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits
+        sub_all = torch.cat(sub, dim=0)
+        del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits, sub
         gc.collect()
-        print(ai_prob)
-        exit()
-        return ai_prob.cpu()
+
+        return sub_all
     
     def content_level_eval(self, texts, true_labels, pred_labels):
         from collections import Counter
@@ -397,8 +395,8 @@ if __name__ == "__main__":
             trainer.model.load_state_dict(saved_model.state_dict())
             trainer.test(content_level_eval=args.test_content)
             generated = trainer.test(content_level_eval=args.test_content) # zzy
-            sub = pd.DataFrame(generated.numpy()) # zzy 
-            sub.to_csv('/kaggle/working/submission.csv', index=False, header=False) #zzy
+            sub_all = pd.DataFrame(generated.numpy()) # zzy 
+            sub_all.to_csv('/kaggle/working/submission.csv', index=False, header=False) #zzy
         else:
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)

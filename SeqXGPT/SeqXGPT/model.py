@@ -145,11 +145,8 @@ class ModelWiseTransformerClassifier(nn.Module):
 
     def forward(self, x, labels):
         mask = labels.gt(-1)
-        print('\n')
-        print('mask shape:', mask.shape)
         padding_mask = ~mask
-        print('padding shape: ', padding_mask.shape)
-
+        
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  
         out2 = self.conv_feat_extract(x[:, 1:2, :])  
@@ -157,23 +154,18 @@ class ModelWiseTransformerClassifier(nn.Module):
         # out4 = self.conv_feat_extract(x[:, 3:4, :])  
         # out = torch.cat((out1, out2, out3, out4), dim=2)  
         out = torch.cat((out1, out2), dim=2)
-        print('out shape: ', out.shape)
         outputs = out + self.position_encoding.to(out.device)
-        print('1:', outputs.shape)
         outputs = self.norm(outputs)
         outputs = self.encoder(outputs, src_key_padding_mask=padding_mask)
-        print('2:', outputs.shape)
         dropout_outputs = self.dropout(outputs)
-        print('3:', dropout_outputs.shape)
         logits = self.classifier(dropout_outputs)
-        print('logits shape: ', logits.shape)
+
         if self.training:
             loss_fct = CrossEntropyLoss(ignore_index=-1)
             loss = loss_fct(logits.view(-1, self.label_num), labels.view(-1))
             output = {'loss': loss, 'logits': logits}
         else:
             paths, scores = self.crf.viterbi_decode(logits=logits, mask=mask)
-            print('paths shape: ', paths.shape)
             paths[mask==0] = -1
             output = {'preds': paths, 'logits': logits}
             pass

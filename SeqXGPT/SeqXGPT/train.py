@@ -81,6 +81,9 @@ class SupervisedTrainer:
             num_training_steps=num_training_steps)
 
     def train(self, ckpt_name='linear_en.pt'):
+
+        torch.cuda.empty_cache()
+        
         for epoch in trange(int(self.num_train_epochs), desc="Epoch"):
             self.model.train()
             tr_loss = 0
@@ -119,12 +122,14 @@ class SupervisedTrainer:
         return
 
     def test(self, content_level_eval=False):
+        torch.cuda.empty_cache()
         self.model.eval()
         texts = []
         true_labels = []
         pred_labels = []
         total_logits = []
         sub = []
+        prompt_len_list = []
         for step, inputs in enumerate(
                 tqdm(self.data.test_dataloader, desc="Iteration")):
             for k, v in inputs.items():
@@ -141,6 +146,7 @@ class SupervisedTrainer:
                 preds = output['preds']
                 
                 texts.extend(inputs['text'])
+                prompt_len_list.extend(inputs['prompt_len'])
                 pred_labels.extend(preds.cpu().tolist())
                 true_labels.extend(labels.cpu().tolist())
                 total_logits.extend(logits.cpu().tolist())
@@ -174,10 +180,11 @@ class SupervisedTrainer:
 
         print("Accuracy: {:.1f}".format(accuracy*100))
         sub_all = torch.cat(sub, dim=0)
+        origin_text = [texts[i][prompt_len_list[i]+2:] for i in range(len(texts))]
         del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits, sub
         gc.collect()
 
-        return sub_all
+        return origin_text, sub_all
     
     def content_level_eval(self, texts, true_labels, pred_labels):
         from collections import Counter
@@ -394,9 +401,9 @@ if __name__ == "__main__":
             saved_model = torch.load(ckpt_name)
             trainer.model.load_state_dict(saved_model.state_dict())
             trainer.test(content_level_eval=args.test_content)
-            generated = trainer.test(content_level_eval=args.test_content) # zzy
-            sub_all = pd.DataFrame(generated.numpy()) # zzy 
-            sub_all.to_csv('/kaggle/working/submission.csv', index=False, header=False) #zzy
+            texts, generated = trainer.test(content_level_eval=args.test_content) # zzy
+            sub = pd.DataFrame({'id': texts, 'generated': generated.numpy()}) # zzy
+            sub.to_csv('/kaggle/working/submission.csv', index=False) #zzy
         else:
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)

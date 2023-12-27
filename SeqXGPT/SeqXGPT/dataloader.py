@@ -131,7 +131,7 @@ class DataManager:
     
     def data_collator(self, samples):
         # samples: {'features': [], 'prompt_len': [], 'label': [], 'text': []}
-        # batch: {'features': [], 'labels': [], 'text': []}
+        # batch: {'features': [], 'labels': [], 'text': [], 'prompt_len': []}
         batch = {}
 
         features = [sample['features'] for sample in samples]
@@ -165,7 +165,8 @@ class DataManager:
         batch['features'] = features
         batch['labels'] = masks
         batch['text'] = text
-
+        batch['prompt_len'] = prompt_len
+        
         return batch
 
     

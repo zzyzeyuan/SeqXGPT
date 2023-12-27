@@ -143,9 +143,10 @@ class ModelWiseTransformerClassifier(nn.Module):
         out = out.transpose(1, 2)
         return out
 
-    def forward(self, x, labels):
-        mask = labels.gt(-1)
-        padding_mask = ~mask
+    # def forward(self, x, labels):
+    def forward(self, x):
+        # mask = labels.gt(-1)
+        # padding_mask = ~mask
         
         x = x.transpose(1, 2)
         out1 = self.conv_feat_extract(x[:, 0:1, :])  
@@ -156,21 +157,23 @@ class ModelWiseTransformerClassifier(nn.Module):
         out = torch.cat((out1, out2), dim=2)
         outputs = out + self.position_encoding.to(out.device)
         outputs = self.norm(outputs)
-        outputs = self.encoder(outputs, src_key_padding_mask=padding_mask)
+        # outputs = self.encoder(outputs, src_key_padding_mask=padding_mask)
+        outputs = self.encoder(outputs) # zzy
         dropout_outputs = self.dropout(outputs)
         logits = self.classifier(dropout_outputs)
 
-        if self.training:
-            loss_fct = CrossEntropyLoss(ignore_index=-1)
-            loss = loss_fct(logits.view(-1, self.label_num), labels.view(-1))
-            output = {'loss': loss, 'logits': logits}
-        else:
-            paths, scores = self.crf.viterbi_decode(logits=logits, mask=mask)
-            paths[mask==0] = -1
-            output = {'preds': paths, 'logits': logits}
-            pass
+        # if self.training:
+        #     loss_fct = CrossEntropyLoss(ignore_index=-1)
+        #     loss = loss_fct(logits.view(-1, self.label_num), labels.view(-1))
+        #     output = {'loss': loss, 'logits': logits}
+        # else:
+        #     paths, scores = self.crf.viterbi_decode(logits=logits, mask=mask)
+        #     paths[mask==0] = -1
+        #     output = {'preds': paths, 'logits': logits}
+        #     pass
 
-        return output
+        # return output
+        return logits
 
 class TransformerOnlyClassifier(nn.Module):
 

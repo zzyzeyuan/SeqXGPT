@@ -136,20 +136,20 @@ class SupervisedTrainer:
                 if isinstance(v, torch.Tensor):
                     inputs[k] = v.to(self.device)
             with torch.no_grad():
-                labels = inputs['labels']
+                # labels = inputs['labels']
                 output = self.model(inputs['features'], inputs['labels'])
                 logits = output['logits']
                 logp = F.softmax(logits, dim=2)
                 ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
                 ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
                 sub.append(ai_prob.cpu())
-                preds = output['preds']
+                # preds = output['preds']
                 
-                texts.extend(inputs['text'])
+                # texts.extend(inputs['text'])
                 # prompt_len_list.extend(inputs['prompt_len'])
-                pred_labels.extend(preds.cpu().tolist())
-                true_labels.extend(labels.cpu().tolist())
-                total_logits.extend(logits.cpu().tolist())
+                # pred_labels.extend(preds.cpu().tolist())
+                # true_labels.extend(labels.cpu().tolist())
+                # total_logits.extend(logits.cpu().tolist())
         
         # with open("", 'w') as f:
         #     f.write(json.dumps(total_logits[3], ensure_ascii=False) + '\n')
@@ -158,30 +158,30 @@ class SupervisedTrainer:
         #     f.write(json.dumps(pred_labels[3], ensure_ascii=False) + '\n')
 
 
-        if content_level_eval:
-            # content level evaluation
-            print("*" * 8, "Content Level Evalation", "*" * 8)
-            content_result = self.content_level_eval(texts, true_labels, pred_labels)
-        else:
-            # sent level evalation
-            print("*" * 8, "Sentence Level Evalation", "*" * 8)
-            sent_result = self.sent_level_eval(texts, true_labels, pred_labels)
+        # if content_level_eval:
+        #     # content level evaluation
+        #     print("*" * 8, "Content Level Evalation", "*" * 8)
+        #     content_result = self.content_level_eval(texts, true_labels, pred_labels)
+        # else:
+        #     # sent level evalation
+        #     print("*" * 8, "Sentence Level Evalation", "*" * 8)
+        #     sent_result = self.sent_level_eval(texts, true_labels, pred_labels)
 
         # word level evalation
-        print("*" * 8, "Word Level Evalation", "*" * 8)
-        true_labels = np.array(true_labels)
-        pred_labels = np.array(pred_labels)
-        true_labels_1d = true_labels.reshape(-1)
-        pred_labels_1d = pred_labels.reshape(-1)
-        mask = true_labels_1d != -1
-        true_labels_1d = true_labels_1d[mask]
-        pred_labels_1d = pred_labels_1d[mask]
-        accuracy = (true_labels_1d == pred_labels_1d).astype(np.float32).mean().item()
+        # print("*" * 8, "Word Level Evalation", "*" * 8)
+        # true_labels = np.array(true_labels)
+        # pred_labels = np.array(pred_labels)
+        # true_labels_1d = true_labels.reshape(-1)
+        # pred_labels_1d = pred_labels.reshape(-1)
+        # mask = true_labels_1d != -1
+        # true_labels_1d = true_labels_1d[mask]
+        # pred_labels_1d = pred_labels_1d[mask]
+        # accuracy = (true_labels_1d == pred_labels_1d).astype(np.float32).mean().item()
 
-        print("Accuracy: {:.1f}".format(accuracy*100))
+        # print("Accuracy: {:.1f}".format(accuracy*100))
         sub_all = torch.cat(sub, dim=0)
         # origin_text = [texts[i][prompt_len_list[i]+2:] for i in range(len(texts))]
-        del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits, sub
+        del true_labels, pred_labels, texts, total_logits, sub
         gc.collect()
 
         return sub_all

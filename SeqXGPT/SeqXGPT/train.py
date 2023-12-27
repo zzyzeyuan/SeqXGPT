@@ -129,7 +129,7 @@ class SupervisedTrainer:
         pred_labels = []
         total_logits = []
         sub = []
-        prompt_len_list = []
+        # prompt_len_list = []
         for step, inputs in enumerate(
                 tqdm(self.data.test_dataloader, desc="Iteration")):
             for k, v in inputs.items():
@@ -146,7 +146,7 @@ class SupervisedTrainer:
                 preds = output['preds']
                 
                 texts.extend(inputs['text'])
-                prompt_len_list.extend(inputs['prompt_len'])
+                # prompt_len_list.extend(inputs['prompt_len'])
                 pred_labels.extend(preds.cpu().tolist())
                 true_labels.extend(labels.cpu().tolist())
                 total_logits.extend(logits.cpu().tolist())
@@ -180,11 +180,11 @@ class SupervisedTrainer:
 
         print("Accuracy: {:.1f}".format(accuracy*100))
         sub_all = torch.cat(sub, dim=0)
-        origin_text = [texts[i][prompt_len_list[i]+2:] for i in range(len(texts))]
+        # origin_text = [texts[i][prompt_len_list[i]+2:] for i in range(len(texts))]
         del true_labels_1d, pred_labels_1d, true_labels, pred_labels, accuracy, texts, total_logits, sub
         gc.collect()
 
-        return origin_text, sub_all
+        return sub_all
     
     def content_level_eval(self, texts, true_labels, pred_labels):
         from collections import Counter
@@ -410,8 +410,8 @@ if __name__ == "__main__":
             saved_model = torch.load(ckpt_name)
             trainer.model.load_state_dict(saved_model.state_dict())
             # trainer.test(content_level_eval=args.test_content)
-            texts, generated = trainer.test(content_level_eval=args.test_content) # zzy
-            sub = pd.DataFrame({'text': texts, 'generated': generated.numpy()}) # zzy
+            generated = trainer.test(content_level_eval=args.test_content) # zzy
+            sub = pd.DataFrame({'generated': generated.numpy()}) # zzy
             sub.to_csv('/kaggle/working/submission.csv', index=False) #zzy
         else:
             print("Log INFO: do train...")

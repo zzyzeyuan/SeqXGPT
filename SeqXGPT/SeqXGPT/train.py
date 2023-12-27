@@ -296,32 +296,52 @@ def split_dataset(data_path, train_path, test_path, train_ratio=0.9):
     print('The overall data sources:')
     print(file_names)
     file_paths = [os.path.join(data_path, file_name) for file_name in file_names]
-
-    total_samples = []
-    for file_path in file_paths:
-        with open(file_path, 'r') as f:
-            samples = [json.loads(line) for line in f]
-            total_samples.extend(samples)
     
-    import random
-    random.seed(0)
-    random.shuffle(total_samples)
+    if train_ratio > 0:
+        total_samples = []
+        for file_path in file_paths:
+            with open(file_path, 'r') as f:
+                samples = [json.loads(line) for line in f]
+                total_samples.extend(samples)
+        
+        import random
+        random.seed(0)
+        random.shuffle(total_samples)
+    
+        split_index = int(len(total_samples) * train_ratio)
+        train_data = total_samples[:split_index]
+        test_data = total_samples[split_index:]
+    
+        def save_dataset(fpath, data_samples):
+            with open(fpath, 'w', encoding='utf-8') as f:
+                for sample in tqdm(data_samples):
+                    f.write(json.dumps(sample, ensure_ascii=False) + '\n')
+        save_dataset(train_path, train_data)
+        save_dataset(test_path, test_data)
+        print()
+        print("The number of train dataset:", len(train_data))
+        print("The number of test  dataset:", len(test_data))
+        print('*'*32)
+        pass
 
-    split_index = int(len(total_samples) * train_ratio)
-    train_data = total_samples[:split_index]
-    test_data = total_samples[split_index:]
-
-    def save_dataset(fpath, data_samples):
-        with open(fpath, 'w', encoding='utf-8') as f:
-            for sample in tqdm(data_samples):
-                f.write(json.dumps(sample, ensure_ascii=False) + '\n')
-    save_dataset(train_path, train_data)
-    save_dataset(test_path, test_data)
-    print()
-    print("The number of train dataset:", len(train_data))
-    print("The number of test  dataset:", len(test_data))
-    print('*'*32)
-    pass
+    else: # train_ratio=0
+        total_samples = []
+        for file_path in file_paths:
+            with open(file_path, 'r') as f:
+                samples = [json.loads(line) for line in f]
+                total_samples.extend(samples)
+        
+        def save_dataset(fpath, data_samples):
+            with open(fpath, 'w', encoding='utf-8') as f:
+                for sample in tqdm(data_samples):
+                    f.write(json.dumps(sample, ensure_ascii=False) + '\n')
+        
+        save_dataset(test_path, total_samples) # all data ==> test set
+        print()
+        # print("The number of train dataset:", len(train_data))
+        print("The number of test  dataset:", len(total_samples))
+        print('*'*32)
+        pass
 
 import argparse
 def parse_args():
@@ -361,17 +381,6 @@ if __name__ == "__main__":
         print("Log INFO: split dataset...")
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
 
-    # en_labels = backend_model_info.en_labels
-    # en_labels = {
-    #     'gpt2': 0,
-    #     'gptneo': 1,
-    #     'gptj': 2,
-    #     'llama': 3,
-    #     'gpt3re': 4,
-    #     # 'gpt3sum': 3,
-    #     'human': 5
-    # }
-    # en_labels = {'AI':0, 'human':1}
     en_labels = {'human':0, 'ai':1}
 
     id2label = construct_bmes_labels(en_labels)
@@ -400,7 +409,7 @@ if __name__ == "__main__":
             print("Log INFO: do test...")
             saved_model = torch.load(ckpt_name)
             trainer.model.load_state_dict(saved_model.state_dict())
-            trainer.test(content_level_eval=args.test_content)
+            # trainer.test(content_level_eval=args.test_content)
             texts, generated = trainer.test(content_level_eval=args.test_content) # zzy
             sub = pd.DataFrame({'id': texts, 'generated': generated.numpy()}) # zzy
             sub.to_csv('/kaggle/working/submission.csv', index=False) #zzy
@@ -408,35 +417,3 @@ if __name__ == "__main__":
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)
 
-    """contrastive training"""
-    if args.train_mode == 'contrastive_learning':
-        print('-' * 32 + 'contrastive_learning' + '-' * 32)
-        if args.model == 'CNN':
-            classifier = ModelWiseCNNClassifier(class_num=backend_model_info.en_class_num)
-            ckpt_name = ''
-        else:
-            classifier = ModelWiseTransformerClassifier(class_num=backend_model_info.en_class_num)
-            ckpt_name = ''
-
-        trainer = SupervisedTrainer(data, classifier, loss_criterion = 'ContrastiveLoss')
-        trainer.train(ckpt_name=ckpt_name)
-
-    """classify after contrastive"""
-    if args.train_mode == 'contrastive_classify':
-        print('-' * 32 + 'contrastive_classify' + '-' * 32)
-        if args.model == 'CNN':
-            classifier = ModelWiseCNNClassifier(class_num=backend_model_info.en_class_num)
-            ckpt_name = ''
-            saved_model = torch.load(ckpt_name)
-            classifier.load_state_dict(saved_model.state_dict())
-            ckpt_name = ''
-        else:
-            classifier = ModelWiseTransformerClassifier(class_num=backend_model_info.en_class_num)
-            ckpt_name = ''
-            saved_model = torch.load(ckpt_name)
-            classifier.load_state_dict(saved_model.state_dict())
-            ckpt_name = ''
-
-        # trainer = SupervisedTrainer(data, classifier, train_mode='Contrastive_Classifier')
-        trainer = SupervisedTrainer(data, classifier)
-        trainer.train(ckpt_name=ckpt_name)

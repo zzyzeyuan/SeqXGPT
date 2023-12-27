@@ -137,7 +137,7 @@ class DataManager:
         features = [sample['features'] for sample in samples]
         prompt_len = [sample['prompt_len'] for sample in samples]
         text = [sample['text'] for sample in samples]
-        label = [sample['label'] for sample in samples]
+        # label = [sample['label'] for sample in samples]
 
         features, masks = self.process_and_convert_to_tensor(features)
         # pad_masks = ~masks * -1
@@ -151,22 +151,23 @@ class DataManager:
                 continue
             total_len = len(self.split_sentence(text[idx]))
             
-            if prefix_len > 0:
-                prefix_ids = self.sequence_labels_to_ids(prefix_len, self.human_label)
-                masks[idx][:prefix_len] = prefix_ids[:]
-            if total_len - prefix_len > 0:
-                if total_len > self.max_len:
-                    human_ids = self.sequence_labels_to_ids(self.max_len - prefix_len, label[idx])
-                else:
-                    human_ids = self.sequence_labels_to_ids(total_len - prefix_len, label[idx])
-                masks[idx][prefix_len:total_len] = human_ids[:]
+            # if prefix_len > 0:
+            #     prefix_ids = self.sequence_labels_to_ids(prefix_len, self.human_label)
+            #     masks[idx][:prefix_len] = prefix_ids[:]
+            # if total_len - prefix_len > 0:
+            #     if total_len > self.max_len:
+            #         human_ids = self.sequence_labels_to_ids(self.max_len - prefix_len, label[idx])
+            #     else:
+            #         human_ids = self.sequence_labels_to_ids(total_len - prefix_len, label[idx])
+            #     masks[idx][prefix_len:total_len] = human_ids[:]
             masks[idx] += pad_masks[idx]
 
         batch['features'] = features
-        batch['labels'] = masks
+        # batch['labels'] = masks
         batch['text'] = text
         batch['prompt_len'] = prompt_len
-        
+        print('batch: \n', batch)
+        exit()
         return batch
 
     

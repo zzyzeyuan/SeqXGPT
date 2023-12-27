@@ -137,8 +137,9 @@ class SupervisedTrainer:
                     inputs[k] = v.to(self.device)
             with torch.no_grad():
                 # labels = inputs['labels']
-                output = self.model(inputs['features'], inputs['labels'])
-                logits = output['logits']
+                # output = self.model(inputs['features'], inputs['labels'])
+                logits = self.model(inputs['features'])
+                # logits = output['logits']
                 logp = F.softmax(logits, dim=2)
                 ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
                 ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定

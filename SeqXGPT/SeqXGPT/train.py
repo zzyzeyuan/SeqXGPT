@@ -43,7 +43,7 @@ class SupervisedTrainer:
             'cuda' if torch.cuda.is_available() else 'cpu')
         # self.device = torch.device('cpu')
         self.model.to(self.device)
-        self._create_optimizer_and_scheduler()
+        # self._create_optimizer_and_scheduler()
 
     def _create_optimizer_and_scheduler(self):
         num_training_steps = len(

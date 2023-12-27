@@ -376,7 +376,7 @@ if __name__ == "__main__":
     if not os.path.exists('/kaggle/working/checkpoint'):
         os.makedirs('/kaggle/working/checkpoint')
         print('====> INFO: Create checkpoint dir...')
-    ckpt = '/kaggle/working/checkpoint/' + args.model + '_gpu' + args.gpu + '.pth'
+    # ckpt = '/kaggle/working/checkpoint/' + args.model + '_gpu' + args.gpu + '.pth'
     if args.split_dataset:
         print("Log INFO: split dataset...")
         split_dataset(data_path=args.data_path, train_path=args.train_path, test_path=args.test_path, train_ratio=args.train_ratio)
@@ -394,14 +394,14 @@ if __name__ == "__main__":
         if args.model == 'CNN':
             print('-' * 32 + "CNN" + '-' * 32)
             classifier = ModelWiseCNNClassifier(id2labels=id2label)
-            ckpt_name = ckpt
+            ckpt_name = '/kaggle/input/checkpoint/Transformer_alldata_gpu_0.pth' # 直接用在本地train好的模型参数
         elif args.model == 'RNN':
             print('-' * 32 + "RNN" + '-' * 32)
             classifier = TransformerOnlyClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = ckpt
+            ckpt_name = '/kaggle/input/checkpoint/Transformer_alldata_gpu_0.pth' # 直接用在本地train好的模型参数
         else:
             classifier = ModelWiseTransformerClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = ckpt
+            ckpt_name = '/kaggle/input/checkpoint/Transformer_alldata_gpu_0.pth' # 直接用在本地train好的模型参数
 
         trainer = SupervisedTrainer(data, classifier, en_labels, id2label, args)
 
@@ -411,7 +411,7 @@ if __name__ == "__main__":
             trainer.model.load_state_dict(saved_model.state_dict())
             # trainer.test(content_level_eval=args.test_content)
             texts, generated = trainer.test(content_level_eval=args.test_content) # zzy
-            sub = pd.DataFrame({'id': texts, 'generated': generated.numpy()}) # zzy
+            sub = pd.DataFrame({'text': texts, 'generated': generated.numpy()}) # zzy
             sub.to_csv('/kaggle/working/submission.csv', index=False) #zzy
         else:
             print("Log INFO: do train...")

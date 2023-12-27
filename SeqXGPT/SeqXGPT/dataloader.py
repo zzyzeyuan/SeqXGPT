@@ -68,12 +68,12 @@ class DataManager:
             else:
                 samples = [json.loads(line) for line in f]
 
-        samples_dict = {'features': [], 'prompt_len': [], 'label': [], 'text': []}
-
+        # samples_dict = {'features': [], 'prompt_len': [], 'label': [], 'text': []}
+        samples_dict = {'features': [], 'prompt_len': [], 'text': []} # for kaggle, no label for test data
         for item in tqdm(samples):
 
             text = item['text']
-            label = item['label']
+            # label = item['label']
             prompt_len = item['prompt_len']
             # prompt_len = 0
 
@@ -108,7 +108,7 @@ class DataManager:
 
             samples_dict['features'].append(ll_tokens_list)
             samples_dict['prompt_len'].append(prompt_len)
-            samples_dict['label'].append(label)
+            # samples_dict['label'].append(label)
             samples_dict['text'].append(text)
         
         # with open(processed_data_path, 'wb') as f:

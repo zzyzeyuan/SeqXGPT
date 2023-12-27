@@ -36,7 +36,7 @@ def access_api(text, api_url, do_generate=False):
     return content
 
 
-def get_features(type, input_file, output_file, which_api):
+def get_features(type, input_file, output_file, which_api, kaggle=False):
     """
     get [losses, begin_idx_list, ll_tokens_list, label_int, label] based on raw lines
     """
@@ -94,77 +94,116 @@ def get_features(type, input_file, output_file, which_api):
         'ai': 1
     }
 
-    cn_labels = {
-        'wenzhong': 0,
-        'sky_text': 1,
-        'damo': 2,
-        'chatglm': 3,
-        'gpt3re': 4,
-        'gpt3sum': 4,
-        'human': 5,
-        'moss': 6
-    }
-
     # line = {'text': '', 'label': ''}
     with open(input_file, 'r') as f:
         lines = [json.loads(line) for line in f]
     # lines = lines[:10]
 
     print('input file:{}, length:{}'.format(input_file, len(lines)))
+    if kaggle:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for data in tqdm(lines):
+                line = data['text']
+                # label = data['label']
 
-    with open(output_file, 'w', encoding='utf-8') as f:
-        for data in tqdm(lines, mininterval=2):
+                if 'prompt_len' in data:
+                    prompt_len = data['prompt_len'] # added by zzy
+                else:
+                    prompt_len = 0 # corresponding to human text
 
-            line = data['text']
-            label = data['label']
+                losses = []
+                begin_idx_list = []
+                ll_tokens_list = []
+                if type == 'en':
+                    model_apis = en_model_apis
+                    label_dict = en_labels
 
-            if 'prompt_len' in data:
-                prompt_len = data['prompt_len'] # added by zzy
-            else:
-                prompt_len = 0 # corresponding to human text
+                # label_int = label_dict[label] # default
+                # label_int = data['label_int'] # 处理kaggle data
 
-            losses = []
-            begin_idx_list = []
-            ll_tokens_list = []
-            if type == 'en':
-                model_apis = en_model_apis
-                label_dict = en_labels
-            elif type == 'cn':
-                model_apis = cn_model_apis
-                label_dict = cn_labels
-            # print('INFO: use model api: ', model_apis)
-            label_int = label_dict[label] # default
-            # label_int = data['label_int'] # 处理kaggle data
+                error_flag = False
+                for api in model_apis:
+                    try:
+                        loss, begin_word_idx, ll_tokens = access_api(line, api)
+                        # print('Success!')
+                    except TypeError:
+                        print("return NoneType, probably gpu OOM, discard this sample")
+                        error_flag = True
+                        break
+                    losses.append(loss)
+                    begin_idx_list.append(begin_word_idx)
+                    ll_tokens_list.append(ll_tokens)
+                # if oom, discard this sample
+                if error_flag:
+                    continue
 
-            error_flag = False
-            for api in model_apis:
-                try:
-                    loss, begin_word_idx, ll_tokens = access_api(line, api)
-                    # print('Success!')
-                except TypeError:
-                    print("return NoneType, probably gpu OOM, discard this sample")
-                    error_flag = True
-                    break
-                losses.append(loss)
-                begin_idx_list.append(begin_word_idx)
-                ll_tokens_list.append(ll_tokens)
-            # if oom, discard this sample
-            if error_flag:
-                continue
+                result = {
+                    'losses': losses,
+                    'begin_idx_list': begin_idx_list,
+                    'll_tokens_list': ll_tokens_list,
+                    'prompt_len': prompt_len,
+                    # 'label_int': label_int,
+                    # 'label': label,
+                    'text': line,
+                }
 
-            result = {
-                'prompt_len': prompt_len,
-                'label_int': label_int,
-                'label': label,
-                'losses': losses,
-                'begin_idx_list': begin_idx_list,
-                'll_tokens_list': ll_tokens_list,
-                'text': line,
-            }
-
-            f.write(json.dumps(result, ensure_ascii=False) + '\n')
-            del result, losses, begin_idx_list, ll_tokens_list
-            gc.collect()
+                f.write(json.dumps(result, ensure_ascii=False) + '\n')
+                del result, losses, begin_idx_list, ll_tokens_list
+                gc.collect()
+    else:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for data in tqdm(lines, mininterval=2):
+    
+                line = data['text']
+                label = data['label']
+    
+                if 'prompt_len' in data:
+                    prompt_len = data['prompt_len'] # added by zzy
+                else:
+                    prompt_len = 0 # corresponding to human text
+    
+                losses = []
+                begin_idx_list = []
+                ll_tokens_list = []
+                if type == 'en':
+                    model_apis = en_model_apis
+                    label_dict = en_labels
+                elif type == 'cn':
+                    model_apis = cn_model_apis
+                    label_dict = cn_labels
+                # print('INFO: use model api: ', model_apis)
+                label_int = label_dict[label] # default
+                # label_int = data['label_int'] # 处理kaggle data
+    
+                error_flag = False
+                for api in model_apis:
+                    try:
+                        loss, begin_word_idx, ll_tokens = access_api(line, api)
+                        # print('Success!')
+                    except TypeError:
+                        print("return NoneType, probably gpu OOM, discard this sample")
+                        error_flag = True
+                        break
+                    losses.append(loss)
+                    begin_idx_list.append(begin_word_idx)
+                    ll_tokens_list.append(ll_tokens)
+                # if oom, discard this sample
+                if error_flag:
+                    continue
+    
+                result = {
+                    'prompt_len': prompt_len,
+                    'label_int': label_int,
+                    'label': label,
+                    'losses': losses,
+                    'begin_idx_list': begin_idx_list,
+                    'll_tokens_list': ll_tokens_list,
+                    'text': line,
+                }
+    
+                f.write(json.dumps(result, ensure_ascii=False) + '\n')
+                del result, losses, begin_idx_list, ll_tokens_list
+                gc.collect()
     del lines
     gc.collect()
 
@@ -305,6 +344,7 @@ def parse_args():
     parser.add_argument("--process_features", action="store_true", help="process the raw features")
     parser.add_argument("--api", type=int, help="select from 0(gpt2), 1(gptneo), 2(gptj), 3(llama)")
     parser.add_argument("--do_normalize", action="store_true", help="normalize the features")
+    parser.add_argument("--kaggle", type=int, help="kaggle=1, no kaggle=0")
     return parser.parse_args()
 
 
@@ -312,6 +352,10 @@ if __name__ == "__main__":
     args = parse_args()
     print('INFO: using api number: ', args.api)
     print('\n')
+    kaggle = False
+    if args.kaggle == 1:
+        kaggle = True
+        
     if args.get_en_features:
         """
         retrieve english features in a single file 
@@ -321,88 +365,4 @@ if __name__ == "__main__":
         python gen_features.py --get_en_features --input_file gpt3_ablation_data/gpt3_ablation_train_lines.jsonl --output_file ../features/gpt3_ablation_features/gpt3_ablation_train_features.jsonl
         python gen_features.py --get_en_features --input_file gpt3_ablation_data/gpt3_ablation_test_lines.jsonl --output_file ../features/gpt3_ablation_features/gpt3_ablation_test_features.jsonl
         """
-        get_features(type='en', input_file=args.input_file, output_file=args.output_file, which_api=args.api)
-
-    elif args.get_cn_features:
-        """
-        retrieve chinese features in a single file 
-        python gen_features.py --get_cn_features --input_file aligned_data/cn_wenzhong_aligned_lines.jsonl --output_file ../features/aligned_features/cn_wenzhong_aligned_features.jsonl
-
-        python gen_features.py --get_cn_features --input_file aligned_data/cn_moss_aligned_lines.jsonl --output_file ../features/aligned_features/cn_moss_aligned_features.jsonl
-        """
-        get_features(type='cn', input_file=args.input_file, output_file=args.output_file)
-
-    elif args.get_en_features_multithreading:
-        """
-        retrieve english features in multiple files, use multithreading for faster speed
-        python gen_features.py --get_en_features_multithreading
-        """
-
-        en_input_files = ['supervised_learning/raw_data/en_gpt2_lines_all.jsonl',
-                    'supervised_learning/raw_data/en_gptj_lines_all.jsonl',
-                    'supervised_learning/raw_data/en_gptneo_lines_all.jsonl',
-                    'supervised_learning/raw_data/en_human_lines_all.jsonl',
-                    'supervised_learning/raw_data/en_llama_lines_all.jsonl']
-
-        en_output_files = ['../features/supervised_learning_features/en_gpt2_features.jsonl',
-                           '../features/supervised_learning_features/en_gptj_features.jsonl',
-                           '../features/supervised_learning_features/en_gptneo_features.jsonl',
-                           '../features/supervised_learning_features/en_human_features.jsonl',
-                           '../features/supervised_learning_features/en_llama_features.jsonl']
-
-        threads = []
-        for i in range(len(en_input_files)):
-            t = threading.Thread(target=get_features, args=('en', en_input_files[i], en_output_files[i]))
-            threads.append(t)
-            t.start()
-        for t in threads:
-            t.join()
-
-    elif args.get_cn_features_multithreading:
-        """
-        retrieve chinese features in multiple files, use multithreading for faster speed
-        python gen_features.py --get_cn_features_multithreading
-        """
-        cn_input_files = ['raw_data/cn_human_lines.jsonl',
-                          'raw_data/cn_gpt3re_lines.jsonl',
-                          'raw_data/cn_gpt3sum_lines.jsonl',
-                          'raw_data/cn_chatglm_lines.jsonl',
-                          'raw_data/cn_wenzhong_lines.jsonl',
-                          'raw_data/cn_damo_lines.jsonl',
-                          'raw_data/cn_sky_text_lines.jsonl',
-                          'aligned_data/cn_human_aligned_lines.jsonl',
-                          'aligned_data/cn_gpt3re_aligned_lines.jsonl',
-                          'aligned_data/cn_gpt3sum_aligned_lines.jsonl',
-                          'aligned_data/cn_chatglm_aligned_lines.jsonl',
-                          'aligned_data/cn_wenzhong_aligned_lines.jsonl',
-                          'aligned_data/cn_damo_aligned_lines.jsonl',
-                          'aligned_data/cn_sky_text_aligned_lines.jsonl']
-        cn_output_files = ['../features/raw_features/cn_human_features.jsonl',
-                           '../features/raw_features/cn_gpt3re_features.jsonl',
-                           '../features/raw_features/cn_gpt3sum_features.jsonl',
-                           '../features/raw_features/cn_chatglm_features.jsonl',
-                           '../features/raw_features/cn_wenzhong_features.jsonl',
-                           '../features/raw_features/cn_damo_features.jsonl',
-                           '../features/raw_features/cn_sky_text_features.jsonl',
-                           '../features/aligned_features/cn_human_aligned_features.jsonl',
-                           '../features/aligned_features/cn_gpt3re_aligned_features.jsonl',
-                           '../features/aligned_features/cn_gpt3sum_aligned_features.jsonl',
-                           '../features/aligned_features/cn_chatglm_aligned_features.jsonl',
-                           '../features/aligned_features/cn_wenzhong_aligned_features.jsonl',
-                           '../features/aligned_features/cn_damo_aligned_features.jsonl',
-                           '../features/aligned_features/cn_sky_text_aligned_features.jsonl']
-        threads = []
-        for i in range(len(cn_input_files)):
-            t = threading.Thread(target=get_features, args=('cn', cn_input_files[i], cn_output_files[i]))
-            threads.append(t)
-            t.start()
-        for t in threads:
-            t.join()
-
-    elif args.process_features:
-        
-        print(args.do_normalize)
-        process_features(args.input_file, args.output_file, args.do_normalize)
-
-    else:
-        print("please select an action")
+        get_features(type='en', input_file=args.input_file, output_file=args.output_file, which_api=args.api, kaggle=kaggle)

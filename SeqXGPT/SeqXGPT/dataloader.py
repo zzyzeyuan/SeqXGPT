@@ -166,8 +166,6 @@ class DataManager:
         # batch['labels'] = masks
         batch['text'] = text
         batch['prompt_len'] = prompt_len
-        print('batch: \n', batch)
-        exit()
         return batch
 
     

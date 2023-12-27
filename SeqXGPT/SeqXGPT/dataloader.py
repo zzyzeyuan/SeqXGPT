@@ -84,7 +84,7 @@ class DataManager:
             # if label == 'gpt3re':
             #     continue
 
-            label_int = item['label_int']
+            # label_int = item['label_int']
             begin_idx_list = item['begin_idx_list']
             ll_tokens_list = item['ll_tokens_list']
 

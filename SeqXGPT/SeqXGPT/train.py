@@ -413,7 +413,7 @@ if __name__ == "__main__":
             # trainer.test(content_level_eval=args.test_content)
             generated = trainer.test(content_level_eval=args.test_content) # zzy
             sub = pd.DataFrame({'generated': generated.numpy()}) # zzy
-            sub.to_csv('/kaggle/working/submission.csv', index=False) #zzy
+            sub.to_csv('/kaggle/working/generated.csv', index=False) #zzy
         else:
             print("Log INFO: do train...")
             trainer.train(ckpt_name=ckpt_name)

@@ -69,5 +69,5 @@ if __name__ == "__main__":
     else:
         sniffer_model = MODEL_MAPPING_NAMES[args.model]
         server = Server()
-        server.append_worker(sniffer_model)
+        server.append_worker(sniffer_model, timeout=10)
         server.run()

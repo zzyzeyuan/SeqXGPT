@@ -28,7 +28,7 @@ def access_api(text, api_url, do_generate=False):
         }
         prediction = client.post(api_url,
                                  data=msgpack.packb(post_data),
-                                 timeout=None)
+                                 timeout=10)
     print('=======>prediction status code : ', prediction.status_code)
     if prediction.status_code == 200:
         content = msgpack.unpackb(prediction.content)

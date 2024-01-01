@@ -170,6 +170,10 @@ class SnifferGPTJModel(SnifferBaseModel):
         # self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
         #     'EleutherAI/gpt-j-6B', device_map="auto", load_in_8bit=True)
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
+        print(self.base_tokenizer)
+        print(self.base_model)
+        print(self.base_tokenizer.pad_token_id)
+        exit()
         byte_encoder = bytes_to_unicode()
         self.ppl_calculator = BBPETokenizerPPLCalc(byte_encoder,
                                                    self.base_model,

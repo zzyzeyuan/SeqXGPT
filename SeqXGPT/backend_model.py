@@ -148,7 +148,7 @@ class SnifferGPTJModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.offline_model_path = '/kaggle/input/gpt-j-6B/'
+        self.offline_model_path = '/kaggle/input/gpt-j-6b/'
         bnb_config = BitsAndBytesConfig(load_in_4bit=True,
                                         bnb_4bit_quant_type="nf4",
                                         bnb_4bit_use_double_quant=True,

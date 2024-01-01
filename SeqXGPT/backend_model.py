@@ -198,8 +198,6 @@ class SnifferLlamaModel(SnifferBaseModel):
                                         bnb_4bit_quant_type="nf4",
                                         bnb_4bit_use_double_quant=True,
                                         bnb_4bit_compute_dtype=torch.bfloat16)
-        self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
-        self.base_tokenizer.unk_token_id = self.base_tokenizer.unk_token_id
 
         if self.offline_path is not None:
             print("Using offline Llama model")
@@ -212,6 +210,9 @@ class SnifferLlamaModel(SnifferBaseModel):
             self.base_model = LlamaForCausalLM.from_pretrained(model_path,
                                                            device_map="auto",
                                                            load_in_8bit=True)
+
+        self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
+        self.base_tokenizer.unk_token_id = self.base_tokenizer.unk_token_id
         self.ppl_calculator = SPLlamaTokenizerPPLCalc(self.base_model,
                                                       self.base_tokenizer,
                                                       self.device)

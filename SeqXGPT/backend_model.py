@@ -148,16 +148,15 @@ class SnifferGPTJModel(SnifferBaseModel):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.do_generate = None
         self.text = None
-        self.offline_model_path = '/kaggle/input/gpt-j-6b/'
+        self.config_path = '/kaggle/input/gpt-j-6b-config'
+        self.offline_model_path = '/kaggle/input/gpt-j-6b'
         bnb_config = BitsAndBytesConfig(load_in_4bit=True,
                                         bnb_4bit_quant_type="nf4",
                                         bnb_4bit_use_double_quant=True,
                                         bnb_4bit_compute_dtype=torch.bfloat16)
         if self.offline_model_path is not None:
             print("Using offline GPTJ model")
-            # self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
-            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
-                'EleutherAI/gpt-j-6B')
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.config_path)
             # print(self.base_tokenizer)
             print('1111')
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,

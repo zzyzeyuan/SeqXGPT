@@ -156,9 +156,12 @@ class SnifferGPTJModel(SnifferBaseModel):
         if self.offline_model_path is not None:
             print("Using offline GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
+            print(self.base_tokenizer)
+            print('1111')
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
                                                                                quantization_config=bnb_config,
                                                                                device_map="auto")
+            print('2222')
         else:
             print("Using online GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(

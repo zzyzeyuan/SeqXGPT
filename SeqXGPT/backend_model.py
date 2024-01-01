@@ -158,12 +158,9 @@ class SnifferGPTJModel(SnifferBaseModel):
             print("Using offline GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.config_path)
             # print(self.base_tokenizer)
-            print('1111')
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
                                                                                quantization_config=bnb_config,
-                                                                               device_map="auto")
-            print('2222')
-            
+                                                                               device_map="auto")            
         else:
             print("Using online GPTJ model")
             self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(
@@ -175,10 +172,6 @@ class SnifferGPTJModel(SnifferBaseModel):
         # self.base_model = transformers.AutoModelForCausalLM.from_pretrained(
         #     'EleutherAI/gpt-j-6B', device_map="auto", load_in_8bit=True)
         self.base_tokenizer.pad_token_id = self.base_tokenizer.eos_token_id
-        print(self.base_tokenizer)
-        print(self.base_model)
-        print(self.base_tokenizer.pad_token_id)
-        exit()
         byte_encoder = bytes_to_unicode()
         self.ppl_calculator = BBPETokenizerPPLCalc(byte_encoder,
                                                    self.base_model,

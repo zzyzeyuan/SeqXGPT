@@ -155,13 +155,13 @@ class SnifferGPTJModel(SnifferBaseModel):
                                         bnb_4bit_compute_dtype=torch.bfloat16)
         if self.offline_model_path is not None:
             print("Using offline GPTJ model")
+            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained('/kaggle/input/gpt-j-6b/tokenizer_config.json')
+            # print(self.base_tokenizer)
+            print('1111')
             self.base_model = transformers.AutoModelForCausalLM.from_pretrained(self.offline_model_path,
                                                                                quantization_config=bnb_config,
                                                                                device_map="auto")
             print('2222')
-            self.base_tokenizer = transformers.AutoTokenizer.from_pretrained(self.offline_model_path)
-            print(self.base_tokenizer)
-            print('1111')
             
         else:
             print("Using online GPTJ model")

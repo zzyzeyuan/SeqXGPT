@@ -395,14 +395,14 @@ if __name__ == "__main__":
         if args.model == 'CNN':
             print('-' * 32 + "CNN" + '-' * 32)
             classifier = ModelWiseCNNClassifier(id2labels=id2label)
-            ckpt_name = '/kaggle/input/checkpoint/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
+            ckpt_name = '/kaggle/input/checkpoint2/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
         elif args.model == 'RNN':
             print('-' * 32 + "RNN" + '-' * 32)
             classifier = TransformerOnlyClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = '/kaggle/input/checkpoint/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
+            ckpt_name = '/kaggle/input/checkpoint2/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
         else:
             classifier = ModelWiseTransformerClassifier(id2labels=id2label, seq_len=args.seq_len)
-            ckpt_name = '/kaggle/input/checkpoint/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
+            ckpt_name = '/kaggle/input/checkpoint2/Transformer_forkaggle_gpu_0.pth' # 直接用在本地train好的模型参数
 
         trainer = SupervisedTrainer(data, classifier, en_labels, id2label, args)
 

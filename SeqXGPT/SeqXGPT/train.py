@@ -141,8 +141,18 @@ class SupervisedTrainer:
                 logits = self.model(inputs['features'])
                 # logits = output['logits']
                 logp = F.softmax(logits, dim=2)
-                ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
-                ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
+
+                # 直接计算
+                # ai_prob = torch.sum(logp[:, :, 4:], dim=2) # [32, 1024]
+                # ai_prob = torch.sum(ai_prob, dim=1) / self.seq_len  # 不确定概率是否要这么算，暂定
+                # sub.append(ai_prob.cpu())
+
+                # gpt method
+                human_prob = torch.sum(logp[:, :, :4], dim=2) # [16, 1024]
+                ai_prob = torch.sum(logp[:,:,4:], dim=2)
+                human_tensor = torch.prod(human_prob, dim=1)
+                ai_tensor = torch.prod(ai_prob, dim=1)
+                ai_prob = ai_tensor / (ai_tensor + human_tensor)
                 sub.append(ai_prob.cpu())
                 # preds = output['preds']
                 
